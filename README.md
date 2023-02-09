@@ -1,2 +1,2 @@
-# read-dead-redemption-api
+# red-dead-redemption-api
 fastapi
