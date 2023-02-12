@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-
 engine = create_async_engine(
     os.getenv(...),
     future=True,
@@ -16,7 +15,11 @@ engine = create_async_engine(
     execution_options={"isolation_level": "AUTOCOMMIT"},
 )
 
-async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+async_session = sessionmaker(
+    engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
 
 
 async def get_db() -> Generator:

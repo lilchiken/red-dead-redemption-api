@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import Boolean, Column, String, ForeignKey, Integer, Table
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -26,15 +24,16 @@ class Game(Base):
 
     game_id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
-
-    char_list = relationship('characters',
-                             secondary=games_and_chars_table,
-                             backref='Game')
-
-    state_list = relationship('states',
-                              secondary=games_and_states_table,
-                              backref='Game')
-
+    char_list = relationship(
+        'characters',
+        secondary=games_and_chars_table,
+        backref='Game'
+    )
+    state_list = relationship(
+        'states',
+        secondary=games_and_states_table,
+        back_pop
+    )
     about = Column(String, nullable=False)
 
 
