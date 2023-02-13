@@ -1,13 +1,6 @@
-import re
-from typing import ForwardRef, Union
+from typing import List
 
-from fastapi import HTTPException
 from pydantic import BaseModel
-from pydantic import constr
-from pydantic import validator
-
-
-LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 
 
 class TunedModel(BaseModel):
@@ -26,3 +19,31 @@ class TownBase(TunedModel):
     town_id: int
     name: str
 
+
+class StateBase(TunedModel):
+    state_id: int
+    name: str
+
+
+class GameBase(TunedModel):
+    game_id: int
+    title: str
+    about: str
+
+
+class GameSchema(GameBase):
+    char_list: List[CharBase]
+    state_list: List[StateBase]
+
+
+class StateSchema(StateBase):
+    towns_list: List[TownBase]
+    game_list: List[GameBase]
+
+
+class TownSchema(TownBase):
+    borned_list: List[CharBase]
+
+
+class CharSchema(CharBase):
+    game_list: List[GameBase]

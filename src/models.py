@@ -25,14 +25,14 @@ class Game(Base):
     game_id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
     char_list = relationship(
-        'characters',
+        'Character',
         secondary=games_and_chars_table,
-        backref='Game'
+        back_populates='games'
     )
     state_list = relationship(
-        'states',
+        'State',
         secondary=games_and_states_table,
-        back_pop
+        back_populates='games'
     )
     about = Column(String, nullable=False)
 
@@ -42,7 +42,12 @@ class State(Base):
 
     state_id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    towns_list = relationship('towns', uselist=True, backref='State')
+    towns_list = relationship('towns', backref='state', lazy=False)
+    game_list = relationship(
+        'Game',
+        secondary=games_and_states_table,
+        back_populates='states'
+    )
 
 
 class Town(Base):
@@ -50,7 +55,7 @@ class Town(Base):
 
     town_id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    borned_list = relationship('characters', uselist=True, backref='Town')
+    borned_list = relationship('characters', backref='Town', lazy=False)
 
 
 class Character(Base):
@@ -60,3 +65,8 @@ class Character(Base):
     name = Column(String, nullable=False)
     dead = Column(Boolean(), nullable=False, default=False)
     bio = Column(String, nullable=False)
+    game_list = relationship(
+        'Game',
+        secondary=games_and_chars_table,
+        back_populates='chars'
+    )
