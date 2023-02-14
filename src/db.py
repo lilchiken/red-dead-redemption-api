@@ -2,30 +2,26 @@ from typing import Generator
 from dotenv import load_dotenv
 import os
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-engine = create_async_engine(
+engine = create_engine(
     os.getenv(...),
-    future=True,
-    echo=True,
-    execution_options={"isolation_level": "AUTOCOMMIT"},
 )
 
-async_session = sessionmaker(
-    engine,
-    expire_on_commit=False,
-    class_=AsyncSession
+SessionLocal = sessionmaker(
+    bind=engine,
+    autocommit=False,
+    autoflush=False
 )
 
 
-async def get_db() -> Generator:
+def get_db() -> Generator:
     """Dependency for getting async session"""
+    session = SessionLocal()
     try:
-        session: AsyncSession = async_session()
         yield session
     finally:
-        await session.close()
+        session.close()
