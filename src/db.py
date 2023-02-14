@@ -1,6 +1,6 @@
 from typing import Generator
 from dotenv import load_dotenv
-import os
+# import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,13 +8,14 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 engine = create_engine(
-    os.getenv(...),
+    # os.getenv(...),
+    "postgresql://test_admin:0000@localhost:5432/testing_table"
 )
 
 SessionLocal = sessionmaker(
     bind=engine,
-    autocommit=False,
-    autoflush=False
+    autocommit=True,
+    autoflush=True
 )
 
 
