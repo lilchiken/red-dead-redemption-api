@@ -9,7 +9,7 @@ load_dotenv()
 
 engine = create_engine(
     # os.getenv(...),
-    "postgresql://test_admin:0000@localhost:5432/testing_table"
+    "postgresql://ilaandruhin:0000@localhost:5432/new_test"
 )
 
 SessionLocal = sessionmaker(
