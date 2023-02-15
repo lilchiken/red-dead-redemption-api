@@ -32,6 +32,8 @@ class TestAPI(unittest.TestCase):
         with cls.session as ses:
             ses.bulk_save_objects(Test(test='test') for _ in range(10))
             ses.commit()
+            cls.list_test = [x[0] for x in ses.query(Test.id).all()]
+            cls.one_obj = cls.list_test[0]
 
     @classmethod
     def tearDownClass(cls):
@@ -42,9 +44,12 @@ class TestAPI(unittest.TestCase):
             ses.close()
 
     @timeit
-    def test_db(self):
-        with self.session as ses:
-            for x in ses.query(Test.id).all():
-                print(requests.get(f'http://127.0.0.1:1234/test/{x[0]}').content)
-                # ans = ses.query(Test).filter(Test.id == x[0]).first().__dict__
-                # print(TestSchema.parse_obj(ans).json())
+    def test_all_obj(self):
+        for x in self.list_test:
+            requests.get(f'http://127.0.0.1:1234/test/{x}').content
+            # ans = ses.query(Test).filter(Test.id == x[0]).first().__dict__
+            # print(TestSchema.parse_obj(ans).json())
+
+    @timeit
+    def test_one_obj(self):
+        requests.get(f'http://127.0.0.1:1234/test/{self.one_obj}').content
