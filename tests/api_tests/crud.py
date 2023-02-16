@@ -7,4 +7,4 @@ def test(
     db: Session,
     id: int
 ):
-    return db.query(Test).filter(Test.id == id).first().__dict__
+    return db.query(Test).filter(Test.id == id).first()

@@ -14,7 +14,7 @@ db = Session(bind=engine)
 
 @app.route('/test/<test_id>')
 def test(test_id: int):
-    ans = crud.test(db, test_id)
+    ans = crud.test(db, test_id).__dict__
     ans = TestSchema.parse_obj(ans).json()
     if not ans:
         return abort(404)

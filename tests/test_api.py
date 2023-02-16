@@ -44,12 +44,21 @@ class TestAPI(unittest.TestCase):
             ses.close()
 
     @timeit
-    def test_all_obj(self):
+    def test_all_obj_fastapi(self):
         for x in self.list_test:
-            requests.get(f'http://127.0.0.1:1234/test/{x}').content
+            requests.get(f'http://127.0.0.1:8000/test/{x}').content
             # ans = ses.query(Test).filter(Test.id == x[0]).first().__dict__
             # print(TestSchema.parse_obj(ans).json())
 
     @timeit
-    def test_one_obj(self):
+    def test_one_obj_fastapi(self):
+        requests.get(f'http://127.0.0.1:8000/test/{self.one_obj}').content
+
+    @timeit
+    def test_all_obj_flask(self):
+        for x in self.list_test:
+            requests.get(f'http://127.0.0.1:1234/test/{x}').content
+
+    @timeit
+    def test_one_obj_flask(self):
         requests.get(f'http://127.0.0.1:1234/test/{self.one_obj}').content
