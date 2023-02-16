@@ -1,13 +1,16 @@
+import logging
+
 from flask import Flask, abort
 from sqlalchemy.orm import Session
 
 from src.db import engine
 import tests.api_tests.crud as crud
-
-from src.models import Test
+# from src.models import Test
 from tests.api_tests.schemas import TestSchema
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.disabled = True
 
 db = Session(bind=engine)
 
