@@ -30,25 +30,28 @@ class TestAPI(unittest.TestCase):
         super().setUpClass()
         cls.session = Session(bind=engine)
         with cls.session as ses:
-            ses.bulk_save_objects(Test(test='test') for _ in range(1000))
+            ses.bulk_save_objects(Test(test='test') for _ in range(100))
             ses.commit()
             cls.list_test = [x[0] for x in ses.query(Test.id).all()]
             cls.one_obj = cls.list_test[0]
         subprocess.run(
-            'pgrep -f "python3 -m tests.api_tests" | xargs kill -9',
+            'pgrep -f "gunicorn" | xargs kill -9',
             shell=True
         )
-        time.sleep(1)
+        time.sleep(2)
         cls.flask = subprocess.Popen(
-            'python3 -m flask --app tests.api_tests.flask run', shell=True
-        )
-        time.sleep(2)
-        cls.fastapi = subprocess.Popen(
-            'python3 -m uvicorn tests.api_tests.fastapi:app '
-            '--log-level critical',
+            "gunicorn -w 14 -b 127.0.0.1:5000 'tests.api_tests.flask:app' "
+            "--log-level ERROR",
             shell=True
         )
-        time.sleep(2)
+        time.sleep(5)
+        cls.fastapi = subprocess.Popen(
+            "gunicorn tests.api_tests.fastapi:app --workers 10 --worker-class "
+            "uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 "
+            "--log-level ERROR",
+            shell=True
+        )
+        time.sleep(5)
 
     @classmethod
     def tearDownClass(cls):
@@ -62,7 +65,7 @@ class TestAPI(unittest.TestCase):
         cls.fastapi.kill()
         cls.flask.kill()
         subprocess.run(
-            'pgrep -f "python3 -m tests.api_tests" | xargs kill -9',
+            'pgrep -f "gunicorn" | xargs kill -9',
             shell=True
         )
 
