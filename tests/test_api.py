@@ -3,6 +3,7 @@ from functools import wraps
 import time
 import requests
 import subprocess
+import multiprocessing
 
 from sqlalchemy.orm import Session
 
@@ -24,16 +25,30 @@ def timeit(func):
     return timeit_wrapper
 
 
+def subprocrunShellTrue(cmd: str):
+    return subprocess.run(cmd, shell=True)
+
+
 class TestAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.session = Session(bind=engine)
         with cls.session as ses:
-            ses.bulk_save_objects(Test(test='test') for _ in range(100))
+            ses.bulk_save_objects(Test(test='test') for _ in range(5))
             ses.commit()
             cls.list_test = [x[0] for x in ses.query(Test.id).all()]
             cls.one_obj = cls.list_test[0]
+        cls.all_curl_flask = [f'curl -H "Accept: application/json" '
+                              f'http://127.0.0.1:5000/test/{x}'
+                              for x in cls.list_test]
+        cls.all_curl_fastapi = [f'curl -H "Accept: application/json" '
+                                f'http://127.0.0.1:8000/test/{x}'
+                                for x in cls.list_test]
+        cls.all_http_flask = [f'http://127.0.0.1:5000/test/{x}'
+                              for x in cls.list_test]
+        cls.all_http_fastapi = [f'http://127.0.0.1:8000/test/{x}'
+                                for x in cls.list_test]
         subprocess.run(
             'pgrep -f "gunicorn" | xargs kill -9',
             shell=True
@@ -116,3 +131,39 @@ class TestAPI(unittest.TestCase):
                 f'curl -H "Accept: application/json" '
                 f'http://127.0.0.1:5000/test/{x}', shell=True
             )
+
+    def test_multiprocess(self):
+        with multiprocessing.Pool(14) as pool:
+            @timeit
+            def multiprocess_test_fastapi_curls():
+                pool.map(
+                    subprocrunShellTrue,
+                    self.all_curl_fastapi
+                )
+            multiprocess_test_fastapi_curls()
+
+            @timeit
+            def multiprocess_test_flask_curls():
+                pool.map(
+                    subprocrunShellTrue,
+                    self.all_curl_flask
+                )
+            multiprocess_test_flask_curls()
+
+            @timeit
+            def multiprocess_test_fastapi_http():
+                pool.map(
+                    requests.get,
+                    self.all_http_fastapi
+                )
+            multiprocess_test_fastapi_http()
+
+            @timeit
+            def multiprocess_test_flask_http():
+                pool.map(
+                    requests.get,
+                    self.all_http_flask
+                )
+            multiprocess_test_flask_http()
+
+            pool.close()
