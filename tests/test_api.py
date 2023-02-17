@@ -4,6 +4,7 @@ import time
 import requests
 import subprocess
 import multiprocessing
+import random
 
 from sqlalchemy.orm import Session
 
@@ -55,13 +56,13 @@ class TestAPI(unittest.TestCase):
         )
         time.sleep(2)
         cls.flask = subprocess.Popen(
-            "gunicorn -w 14 -b 127.0.0.1:5000 'tests.api_tests.flask:app' "
+            "gunicorn -w 5 -b 127.0.0.1:5000 'tests.api_tests.flask:app' "
             "--log-level ERROR",
             shell=True
         )
         time.sleep(5)
         cls.fastapi = subprocess.Popen(
-            "gunicorn tests.api_tests.fastapi:app --workers 10 --worker-class "
+            "gunicorn tests.api_tests.fastapi:app --workers 5 --worker-class "
             "uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 "
             "--log-level ERROR",
             shell=True
@@ -133,7 +134,7 @@ class TestAPI(unittest.TestCase):
             )
 
     def test_multiprocess(self):
-        with multiprocessing.Pool(14) as pool:
+        with multiprocessing.Pool(5) as pool:
             @timeit
             def multiprocess_test_fastapi_curls():
                 pool.map(
@@ -167,3 +168,26 @@ class TestAPI(unittest.TestCase):
             multiprocess_test_flask_http()
 
             pool.close()
+
+    def test_three_wrk(self):
+        if len(self.list_test) <= 2:
+            raise ValueError('Need to create more test rows (3 or more)')
+        elif len(self.list_test) == 3:
+            three_rndm_url = self.list_test.copy()
+        else:
+            three_rndm_url = []
+            for _ in range(3):
+                three_rndm_url.append(random.randint(
+                    self.list_test[0], self.list_test[-1]
+                ))
+        for x in three_rndm_url:
+            print('###FLASK###')
+            subprocess.run(
+                f'wrk -c100 -t5 -d10s http://127.0.0.1:5000/test/{x}',
+                shell=True
+            )
+            print('###FASTAPI###')
+            subprocess.run(
+                f'wrk -c100 -t5 -d10s http://127.0.0.1:8000/test/{x}',
+                shell=True
+            )
