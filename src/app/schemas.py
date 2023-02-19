@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -9,41 +9,47 @@ class TunedModel(BaseModel):
 
 
 class CharBase(TunedModel):
-    char_id: int
+    id: int
     name: str
-    dead: bool
+    dead: Union[bool, None]
     bio: str
+    town_id: Union[int, None]
 
 
 class TownBase(TunedModel):
-    town_id: int
+    id: int
     name: str
+    state_id: Union[int, None]
 
 
 class StateBase(TunedModel):
-    state_id: int
+    id: int
     name: str
 
 
 class GameBase(TunedModel):
-    game_id: int
+    id: int
     title: str
     about: str
 
+    # @classmethod
+    # def parse_obj(cls, obj) -> 'Model':
+    #     return super().parse_obj(obj)
+
 
 class GameSchema(GameBase):
-    char_list: List[CharBase]
-    state_list: List[StateBase]
+    chars: List[CharBase]
+    states: List[StateBase]
 
 
 class StateSchema(StateBase):
-    towns_list: List[TownBase]
-    game_list: List[GameBase]
+    towns_list: Union[List[TownBase], None]
+    games: List[GameBase]
 
 
 class TownSchema(TownBase):
-    borned_list: List[CharBase]
+    borned_list: Union[List[CharBase], None]
 
 
 class CharSchema(CharBase):
-    game_list: List[GameBase]
+    games: List[GameBase]
