@@ -1,7 +1,9 @@
 from fastapi import Depends, FastAPI, Request, status
 # from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
@@ -14,11 +16,26 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost:3000",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # хэндлер по отлову ошибок десериализации
 @app.exception_handler(ValidationError)
 def validation_exception_handler(request: Request, exc: ValidationError):
-    return JSONResponse(
+    return Response(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": exc.errors()}),
     )
@@ -27,7 +44,10 @@ def validation_exception_handler(request: Request, exc: ValidationError):
 @app.get('/chars/{char_id}', response_model=schemas.CharSchema)
 def read_char(char_id: int, db: Session = Depends(get_db)):
     ans = crud.get_char_by_id(db, char_id)
-    return ans
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder({'detail': ans})
+    )
 
 
 @app.get('/towns/{town_id}', response_model=schemas.CharSchema)
