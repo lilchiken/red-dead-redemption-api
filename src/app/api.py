@@ -21,6 +21,7 @@ origins = [
     "https://localhost.tiangolo.com",
     "http://localhost:3000",
     "http://localhost:8080",
+    "http://localhost"
 ]
 
 app.add_middleware(
@@ -35,7 +36,7 @@ app.add_middleware(
 # хэндлер по отлову ошибок десериализации
 @app.exception_handler(ValidationError)
 def validation_exception_handler(request: Request, exc: ValidationError):
-    return Response(
+    return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": exc.errors()}),
     )
@@ -66,3 +67,12 @@ def read_state(state_id: int, db: Session = Depends(get_db)):
 def read_game(game_id: int, db: Session = Depends(get_db)):
     ans = crud.get_game_by_id(db, game_id)
     return ans
+
+
+@app.post('/subEmail')
+def read_email(item: schemas.MailModel):
+    # save email
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder({'detail': 'Thank you for sub!'})
+    )

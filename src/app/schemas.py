@@ -1,6 +1,9 @@
 from typing import List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+class MailModel(BaseModel):
+    email: EmailStr
 
 
 class TunedModel(BaseModel):
